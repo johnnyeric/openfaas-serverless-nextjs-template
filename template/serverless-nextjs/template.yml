@@ -1,0 +1,6 @@
+language: serverless-nextjs
+fprocess: node index.js
+welcome_message: |
+  You have created a new function that uses Next.js 8 on serverless mode.
+  To begin, simply define your react components on the pages folder and map then on the handler.js function.
+  In order to enable Next.js asset serving please define the assetPrefix in next.config.js with your function name. 

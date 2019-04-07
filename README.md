@@ -1,82 +1,70 @@
-OpenFaaS Node.js 10 (LTS) and Express.js template
+OpenFaaS Next.js Serverless Mode template
 =============================================
 
-This template provides additional context and control over the HTTP response from your function.
+> Template based on [Node.js 10 Express Template for OpenFaaS](https://github.com/openfaas-incubator/node10-express-template)
+
+This template provides additional context and control over the HTTP response from your function. Using this context as base, this template also provides a builtin setup for Next.js on serverless mode.
 
 ## Status of the template
-
-This template is pre-release and is likely to change - please provide feedback via https://github.com/openfaas/faas
 
 The template makes use of the OpenFaaS incubator project [of-watchdog](https://github.com/openfaas-incubator/of-watchdog).
 
 ## Supported platforms
 
-* x86_64 - `node10-express`
-* armhf - `node10-express-armhf`
+* x86_64 - `serverless-nextjs`
 
 ## Trying the template
 
 ```
-$ faas template pull https://github.com/openfaas-incubator/node10-express-template
-$ faas new --lang node10-express
+$ faas template pull https://github.com/johnnyeric/openfaas-serverless-nextjs-template
+$ faas new --lang serverless-nextjs
 ```
 
 ## Example usage
 
-### Success and JSON body
+### Next.js Serverless Pages with custom assets
 
 ```js
 "use strict"
 
-module.exports = (event, context) => {
-    let err;
-    const result =             {
-        status: "You said: " + JSON.stringify(event.body)
-    };
+const home = require('./.next/serverless/pages/index.js');
+const about = require('./.next/serverless/pages/about.js');
 
-    context.
-        succeed(result);
+module.exports = (context) => {
+    const contentPath = `${__dirname}/static`;
+    const defaultPath = `${__dirname}/static/404.html`;
+
+    context.servePages({
+        '/': home,
+        '/about': about,
+    });
+
+    // Everything not served as Next.js pages will be served as static
+    context.setCustomFolder(contentPath, defaultPath); // optional
+    context.serveStatic();
 }
 ```
 
-### Custom HTTP status code
+### Accept only HTTP GET and custom HTTP status code
 
 ```js
 "use strict"
 
-module.exports = (event, context) => {
-    let err;
-    const result = {"message": "The record requested was not found."};
+const home = require('./.next/serverless/pages/index.js');
+const about = require('./.next/serverless/pages/about.js');
 
-    context
-        .status(404)
-        .succeed(result);
-}
-```
+module.exports = (context) => {
 
-### Failure code and plain-text body:
+    if (context.event.method !== 'GET') {
+        return context.status(400).fail('Bad Request');
+    }
 
-```js
-"use strict"
+    context.servePages({
+        '/': home,
+        '/about': about,
+    });
 
-module.exports = (event, context) => {
-    let err;
-    const result = "Unable to process this event.";
-
-    context
-        .fail(result);
-}
-```
-
-### Using the optional `callback` parameter:
-
-```js
-"use strict"
-
-module.exports = (event, context, callback) => {
-    let err;
-
-    callback(err, {"result": "message received"});
+    context.serveStatic();
 }
 ```
 
@@ -85,7 +73,7 @@ module.exports = (event, context, callback) => {
 ```js
 "use strict"
 
-module.exports = (event, context) => {
+module.exports = (context) => {
   context
     .headers({'Location': 'https://www.google.com/'})
     .status(307)    // Temporary
@@ -99,9 +87,9 @@ module.exports = (event, context) => {
 ```js
 "use strict"
 
-module.exports = (event, context) => {
-  if(event.path == "/login") {
-      return login(event, context);
+module.exports = (context) => {
+  if (context.event.path == "/login") {
+      return login(context);
   }
 
   return context
@@ -109,7 +97,7 @@ module.exports = (event, context) => {
         .succeed('Welcome to the homepage.')
 }
 
-function login(event, context) {
+function login(context) {
     return context
         .status(200)
         .succeed('Please log in.')
