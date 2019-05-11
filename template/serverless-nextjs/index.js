@@ -113,6 +113,7 @@ class FunctionContext {
       this.contentPath = `${__dirname}/function${path}`.replace('_next', '.next');
     } else if (this.headerValues['Content-Type'] === '') {
       this.contentPath = this.defaultPath;
+      this.status(404);
     } else {
       this.contentPath = `${this.contentPath}${path}`;
     }
@@ -121,7 +122,7 @@ class FunctionContext {
       if (err) {
 
         if (err.code === 'ENOENT') {
-          return this.event.res.sendFile(this.defaultPath);
+          return this.event.res.status(404).sendFile(this.defaultPath);
         }
 
         return this.status(500).fail(err);
@@ -156,6 +157,9 @@ var middleware = (req, res) => {
 
 app.post('/*', middleware);
 app.get('/*', middleware);
+app.patch('/*', middleware);
+app.put('/*', middleware);
+app.delete('/*', middleware);
 
 const port = process.env.http_port || 3000;
 

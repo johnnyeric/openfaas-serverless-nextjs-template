@@ -1,8 +1,10 @@
 import { css, Global } from '@emotion/core';
+import join from 'proper-url-join';
 import Link from 'next/link';
 import React from 'react';
 import styled from '@emotion/styled';
 
+const BASE_URL = process.env.BASE_URL;
 const basicStyles = css`
   margin: 3rem 0;
   padding: 1rem 0.5rem;
@@ -14,7 +16,6 @@ const basicStyles = css`
   box-shadow: 5px 5px 0 0 black, 10px 10px 0 0 grey;
   transition: all 0.1s linear;
 `;
-
 const Basic = styled.div`
   ${basicStyles};
 `;
@@ -23,22 +24,22 @@ export default () => (
   <React.Fragment>
     <Global
       styles={css`
-          html,
-          body {
-              min-height: 100%;
-              margin: 0;
-              padding: 3rem 1rem;
-              font-size: 24px;
-              font-family: Helvetica, Arial, sans-serif;
-              background: rgb(63,81,181);
-          }
+        html,
+        body {
+            min-height: 100%;
+            margin: 0;
+            padding: 3rem 1rem;
+            font-size: 24px;
+            font-family: Helvetica, Arial, sans-serif;
+            background: rgb(63,81,181);
+        }
       `}
     />
     <div>
-        <Basic>
-          <h1>About</h1>
-          <Link href={{ pathname: '/' }}><a>Home</a></Link>
-        </Basic>
+      <Basic>
+        <h1>About</h1>
+        <Link href='/' as={join(BASE_URL,'/')}><a>Home</a></Link>
+      </Basic>
     </div>
   </React.Fragment>
 );

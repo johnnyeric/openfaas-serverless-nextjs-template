@@ -13,8 +13,9 @@
   "dependencies": {
     "@emotion/core": "^10.0.10",
     "@emotion/styled": "^10.0.10",
-    "next": "^8.0.4",
-    "react": "^16.8.2",
-    "react-dom": "^16.8.2"
+    "next": "^8.1.0",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "proper-url-join": "^2.0.1"
   }
 }
