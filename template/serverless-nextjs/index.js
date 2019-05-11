@@ -9,7 +9,6 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 const handler = require('./function/handler');
 
-// app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(bodyParser.raw());
 app.use(bodyParser.text({ type : "text/*" }));
@@ -31,7 +30,7 @@ class FunctionContext {
   constructor(event, cb) {
     this.cb = cb;
     this.contentPath = `${__dirname}/function/static`;;
-    this.defaultPath = `${__dirname}/404.html`;
+    this.defaultPath = `${__dirname}/function/static/404.html`;
     this.event = event;
     this.headerValues = {};
     this.shouldServeStatic = true;
@@ -92,7 +91,10 @@ class FunctionContext {
 
     if (/.*\.png/.test(path)) {
       this.headerValues['Content-Type'] = 'image/png';
-      return this.event.res.set(this.headers()).sendFile(`${this.contentPath}${path}`);
+      this.event.res
+        .set(this.headers())
+        .sendFile(`${this.contentPath}${path}`);
+      return;
     } 
 
     if (/.*\.js/.test(path)) {
@@ -117,24 +119,23 @@ class FunctionContext {
 
     fs.readFile(this.contentPath, (err, data) => {
       if (err) {
-        this
-          .status(500)
-          .fail(err);
-  
-        return;
+
+        if (err.code === 'ENOENT') {
+          return this.event.res.sendFile(this.defaultPath);
+        }
+
+        return this.status(500).fail(err);
       }
   
       const content = data.toString();
 
-      this
-        .status(200)
-        .succeed(content);
+      this.status(200).succeed(content);
     });
   }
 }
 
 var middleware = (req, res) => {
-  let cb = (err, functionResult) => {
+  const cb = (err, functionResult) => {
     if (err) {
       console.error(err);
       return res.status(500).send(err);
@@ -147,8 +148,8 @@ var middleware = (req, res) => {
     }
   };
 
-  let fnEvent = new FunctionEvent(req,res);
-  let fnContext = new FunctionContext(fnEvent, cb);
+  const fnEvent = new FunctionEvent(req,res);
+  const fnContext = new FunctionContext(fnEvent, cb);
 
   handler(fnContext, cb);
 };
